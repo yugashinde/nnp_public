@@ -74,6 +74,28 @@ void train_model(MODEL* model){
     init_weights(model->W1, SIZE*H1); init_weights(model->b1, H1);
     init_weights(model->W2, H1*H2); init_weights(model->b2, H2);
     init_weights(model->W3, H2*CLASSES); init_weights(model->b3, CLASSES);
+    
+    float *d_W1, *d_b1;
+float *d_W2, *d_b2;
+float *d_W3, *d_b3;
+
+cudaMalloc(&d_W1, sizeof(float) * SIZE * H1);
+cudaMalloc(&d_b1, sizeof(float) * H1);
+
+cudaMalloc(&d_W2, sizeof(float) * H1 * H2);
+cudaMalloc(&d_b2, sizeof(float) * H2);
+
+cudaMalloc(&d_W3, sizeof(float) * H2 * CLASSES);
+cudaMalloc(&d_b3, sizeof(float) * CLASSES);
+
+cudaMemcpy(d_W1, model->W1, sizeof(float) * SIZE * H1, cudaMemcpyHostToDevice);
+cudaMemcpy(d_b1, model->b1, sizeof(float) * H1, cudaMemcpyHostToDevice);
+
+cudaMemcpy(d_W2, model->W2, sizeof(float) * H1 * H2, cudaMemcpyHostToDevice);
+cudaMemcpy(d_b2, model->b2, sizeof(float) * H2, cudaMemcpyHostToDevice);
+
+cudaMemcpy(d_W3, model->W3, sizeof(float) * H2 * CLASSES, cudaMemcpyHostToDevice);
+cudaMemcpy(d_b3, model->b3, sizeof(float) * CLASSES, cudaMemcpyHostToDevice);
 
     for (int epoch=0; epoch<EPOCHS; epoch++) {
         float loss=0;

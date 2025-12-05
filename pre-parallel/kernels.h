@@ -8,3 +8,4 @@
 
 // Kernel function prototypes
 //__global__ void test_kernel();
+
