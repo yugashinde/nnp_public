@@ -1,0 +1,16 @@
+Script started on Sat Dec  6 18:38:35 2025
+]0;shindey@:~/nnp_public/nnp_public/pre-parallel[?1034h[shindey@r2v00 pre-parallel]$ n ./  ./  ls
+config.h    kernels.o  loader.o  makefile   nnp.cu  submission.txt	    testing_log.txt
+kernels.cu  loader.cc  main.cc	 model.bin  nnp.h   t10k-images-idx3-ubyte  train-images-idx3-ubyte
+kernels.h   loader.h   main.o	 nnp	    nnp.o   t10k-labels-idx1-ubyte  train-labels-idx1-ubyte
+]0;shindey@:~/nnp_public/nnp_public/pre-parallel[shindey@r2v00 pre-parallel]$ n n n srun ./ ru  tr   nnp train
+Epoch 0, Loss=nan
+Epoch 1, Loss=nan
+Epoch 2, Loss=nan
+Epoch 3, Loss=nan
+Epoch 4, Loss=nan
+Trained model in 41 seconds
+]0;shindey@:~/nnp_public/nnp_public/pre-parallel[shindey@r2v00 pre-parallel]$ exit
+exit
+
+Script done on Sat Dec  6 18:39:59 2025
