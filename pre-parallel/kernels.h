@@ -9,7 +9,7 @@
 // Kernel function prototypes
 //__global__ void test_kernel();
 
-__global__ void matvec_forward(
+__global__ void matvec_forward( 
     float* mat,      // weights: rows = input size, cols = output size
     float* vec_in,   // input vector
     float* bias,     // biases for each output neuron

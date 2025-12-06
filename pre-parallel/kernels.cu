@@ -43,7 +43,7 @@ __global__ void output_delta(
     int k = blockIdx.x * blockDim.x + threadIdx.x;
     if(k >= num_classes) return;
 
-    delta3[k] = label[k] - outa[k]; // delta = y_true - y_pred
+    delta3[k] = outa[k] - label[k];
 }
 
 __global__ void hidden_delta(
