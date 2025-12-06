@@ -81,6 +81,10 @@ void train_model(MODEL* model){
     float *d_delta1, *d_delta2, *d_delta3;
 
     cudaMalloc(&d_input, SIZE * sizeof(float));
+    float* d_train_label;
+cudaMalloc(&d_train_label, NUM_TRAIN * CLASSES * sizeof(float));
+cudaMemcpy(d_train_label, train_label, NUM_TRAIN * CLASSES * sizeof(float), cudaMemcpyHostToDevice);
+
 
     cudaMalloc(&d_W1, SIZE * H1 * sizeof(float)); cudaMalloc(&d_b1, H1 * sizeof(float));
     cudaMalloc(&d_W2, H1 * H2 * sizeof(float));   cudaMalloc(&d_b2, H2 * sizeof(float));
@@ -104,7 +108,7 @@ void train_model(MODEL* model){
     cudaMalloc(&d_delta3, CLASSES * sizeof(float));
 
     float h1a[H1], h2a[H2], outa[CLASSES];
-    float delta1[H1], delta2[H2], delta3[CLASSES];
+    //float delta1[H1], delta2[H2], delta3[CLASSES];
 
     int threads = 128;
     int blocks_h1 = (H1 + threads - 1) / threads;
