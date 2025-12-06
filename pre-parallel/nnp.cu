@@ -110,7 +110,7 @@ cudaMemcpy(d_train_label, train_label, NUM_TRAIN * CLASSES * sizeof(float), cuda
     float h1a[H1], h2a[H2], outa[CLASSES];
     //float delta1[H1], delta2[H2], delta3[CLASSES];
 
-    int threads = 128;
+    int threads = 256;
     int blocks_h1 = (H1 + threads - 1) / threads;
     int blocks_h2 = (H2 + threads - 1) / threads;
     int blocks_out = (CLASSES + threads - 1) / threads;
@@ -122,11 +122,11 @@ cudaMemcpy(d_train_label, train_label, NUM_TRAIN * CLASSES * sizeof(float), cuda
             cudaMemcpy(d_input, train_data[n], SIZE * sizeof(float), cudaMemcpyHostToDevice);
 
             matvec_forward<<<blocks_h1, threads>>>(d_W1, d_input, d_b1, d_h1a, SIZE, H1, true);
-            cudaDeviceSynchronize();
+           
             matvec_forward<<<blocks_h2, threads>>>(d_W2, d_h1a, d_b2, d_h2a, H1, H2, true);
-            cudaDeviceSynchronize();
+           
             matvec_forward<<<blocks_out, threads>>>(d_W3, d_h2a, d_b3, d_out, H2, CLASSES, false);
-            cudaDeviceSynchronize();
+            
 
             // Copy output back to host if you need it for loss calculation
             cudaMemcpy(outa, d_out, CLASSES * sizeof(float), cudaMemcpyDeviceToHost);
@@ -141,11 +141,11 @@ cudaMemcpy(d_train_label, train_label, NUM_TRAIN * CLASSES * sizeof(float), cuda
 
             // ---------- Backprop ----------
             output_delta<<<blocks_out, threads>>>(d_delta3, d_out, d_train_label + n * CLASSES, CLASSES);
-            cudaDeviceSynchronize();
+            
             hidden_delta<<<blocks_h2, threads>>>(d_delta2, d_h2a, d_delta3, d_W3, H2, CLASSES);
-            cudaDeviceSynchronize();
+          
             hidden_delta<<<blocks_h1, threads>>>(d_delta1, d_h1a, d_delta2, d_W2, H1, H2);
-            cudaDeviceSynchronize();
+         
 
 
             // ---------- Update ----------
