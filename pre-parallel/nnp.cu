@@ -143,27 +143,24 @@ void train_model(MODEL* model){
             hidden_delta<<<blocks_h1, threads>>>(d_delta1, d_h1a, d_delta2, d_W2, H1, H2);
             cudaDeviceSynchronize();
 
-            // Copy deltas back to host for weight updates
-            cudaMemcpy(delta3, d_delta3, CLASSES * sizeof(float), cudaMemcpyDeviceToHost);
-            cudaMemcpy(delta2, d_delta2, H2 * sizeof(float), cudaMemcpyDeviceToHost);
-            cudaMemcpy(delta1, d_delta1, H1 * sizeof(float), cudaMemcpyDeviceToHost);
 
-        
             // ---------- Update ----------
-            for (int j=0;j<H2;j++)
-                for (int k=0;k<CLASSES;k++)
-                    model->W3[j*CLASSES+k]+=LR*delta3[k]*h2a[j];
-            for (int k=0;k<CLASSES;k++) model->b3[k]+=LR*delta3[k];
+            int blocks_W1 = (SIZE * H1 + threads - 1) / threads;
+            int blocks_W2 = (H1 * H2 + threads - 1) / threads;
+            int blocks_W3 = (H2 * CLASSES + threads - 1) / threads;
 
-            for (int j=0;j<H1;j++)
-                for (int k=0;k<H2;k++)
-                    model->W2[j*H2+k]+=LR*delta2[k]*h1a[j];
-            for (int k=0;k<H2;k++) model->b2[k]+=LR*delta2[k];
+            int blocks_b1 = (H1 + threads - 1) / threads;
+            int blocks_b2 = (H2 + threads - 1) / threads;
+            int blocks_b3 = (CLASSES + threads - 1) / threads;
+            update_weights<<<blocks_W1, threads>>>(d_W1, d_delta1, d_input, SIZE, H1, LR);
+            update_biases<<<blocks_b1, threads>>>(d_b1, d_delta1, H1, LR);
 
-            for (int i=0;i<SIZE;i++)
-                for (int j=0;j<H1;j++)
-                    model->W1[i*H1+j]+=LR*delta1[j]*train_data[n][i];
-            for (int j=0;j<H1;j++) model->b1[j]+=LR*delta1[j];
+            update_weights<<<blocks_W2, threads>>>(d_W2, d_delta2, d_h1a, H1, H2, LR);
+            update_biases<<<blocks_b2, threads>>>(d_b2, d_delta2, H2, LR);
+
+            update_weights<<<blocks_W3, threads>>>(d_W3, d_delta3, d_h2a, H2, CLASSES, LR);
+            update_biases<<<blocks_b3, threads>>>(d_b3, d_delta3, CLASSES, LR);
+            cudaDeviceSynchronize();
         }
         printf("Epoch %d, Loss=%.4f\n", epoch, loss/NUM_TRAIN);
     }

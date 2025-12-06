@@ -64,3 +64,33 @@ __global__ void hidden_delta(
     // Multiply by ReLU derivative
     delta_hidden[j] = err * (act_hidden[j] > 0 ? 1.0f : 0.0f);
 }
+__global__ void update_weights(
+    float* W,          // weight matrix: rows = input_size, cols = output_size
+    const float* delta, // delta vector for this layer (output_size)
+    const float* act_in, // input activations from previous layer (input_size)
+    int input_size,
+    int output_size,
+    float lr)          // learning rate
+{
+    int idx = threadIdx.x + blockIdx.x * blockDim.x;
+    int total = input_size * output_size;
+    if(idx >= total) return;
+
+    int i = idx / output_size; // input index
+    int j = idx % output_size; // output index
+
+    // Gradient descent update: W[i,j] += lr * delta[j] * act_in[i]
+    W[i * output_size + j] += lr * delta[j] * act_in[i];
+}
+
+__global__ void update_biases(
+    float* b,          // bias vector
+    const float* delta,// delta vector for this layer
+    int size,
+    float lr)          // learning rate
+{
+    int idx = threadIdx.x + blockIdx.x * blockDim.x;
+    if(idx >= size) return;
+
+    b[idx] += lr * delta[idx];
+}

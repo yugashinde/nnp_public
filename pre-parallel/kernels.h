@@ -34,3 +34,17 @@ __global__ void hidden_delta(
     int num_hidden,            // number of neurons in current layer
     int num_next               // number of neurons in next layer
 );
+
+__global__ void update_weights(
+    float* W,          // weight matrix: rows = input_size, cols = output_size
+    const float* delta, // delta vector for this layer (output_size)
+    const float* act_in, // input activations from previous layer (input_size)
+    int input_size,
+    int output_size,
+    float lr);
+
+__global__ void update_biases(
+    float* b,          // bias vector
+    const float* delta,// delta vector for this layer
+    int size,
+    float lr) ;      // learning rate
