@@ -122,16 +122,10 @@ cudaMemcpy(d_train_label, train_label, NUM_TRAIN * CLASSES * sizeof(float), cuda
             cudaMemcpy(d_input, train_data[n], SIZE * sizeof(float), cudaMemcpyHostToDevice);
 
             matvec_forward<<<blocks_h1, threads>>>(d_W1, d_input, d_b1, d_h1a, SIZE, H1, true);
-           
             matvec_forward<<<blocks_h2, threads>>>(d_W2, d_h1a, d_b2, d_h2a, H1, H2, true);
-           
             matvec_forward<<<blocks_out, threads>>>(d_W3, d_h2a, d_b3, d_out, H2, CLASSES, false);
             
-
-            // Copy output back to host if you need it for loss calculation
             cudaMemcpy(outa, d_out, CLASSES * sizeof(float), cudaMemcpyDeviceToHost);
-            cudaMemcpy(h1a, d_h1a, H1 * sizeof(float), cudaMemcpyDeviceToHost);
-            cudaMemcpy(h2a, d_h2a, H2 * sizeof(float), cudaMemcpyDeviceToHost);
 
             softmax(outa, outa, CLASSES);
 
@@ -141,9 +135,7 @@ cudaMemcpy(d_train_label, train_label, NUM_TRAIN * CLASSES * sizeof(float), cuda
 
             // ---------- Backprop ----------
             output_delta<<<blocks_out, threads>>>(d_delta3, d_out, d_train_label + n * CLASSES, CLASSES);
-            
             hidden_delta<<<blocks_h2, threads>>>(d_delta2, d_h2a, d_delta3, d_W3, H2, CLASSES);
-          
             hidden_delta<<<blocks_h1, threads>>>(d_delta1, d_h1a, d_delta2, d_W2, H1, H2);
          
 
@@ -168,12 +160,12 @@ cudaMemcpy(d_train_label, train_label, NUM_TRAIN * CLASSES * sizeof(float), cuda
         }
         printf("Epoch %d, Loss=%.4f\n", epoch, loss/NUM_TRAIN);
     }
-    cudaMemcpy(d_W1, model->W1, SIZE * H1 * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_b1, model->b1, H1 * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_W2, model->W2, H1 * H2 * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_b2, model->b2, H2 * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_W3, model->W3, H2 * CLASSES * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_b3, model->b3, CLASSES * sizeof(float), cudaMemcpyHostToDevice);
+    cudaMemcpy(model->W1, d_W1, SIZE*H1*sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(model->b1, d_b1, H1*sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(model->W2, d_W2, H1*H2*sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(model->b2, d_b2, H2*sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(model->W3, d_W3, H2*CLASSES*sizeof(float), cudaMemcpyDeviceToHost);
+    cudaMemcpy(model->b3, d_b3, CLASSES*sizeof(float), cudaMemcpyDeviceToHost);
 
     // ---------- Free device memory ----------
     cudaFree(d_input);
